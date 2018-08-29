@@ -85,5 +85,23 @@ function transformCommand(args, options, logger) {
 }
 
 function installCommand(args, options, logger) {
-    logger.info(`ℹ️  Looking for node_modules in ${process.cwd()}`);
+    const absPackagePath = path.join(process.cwd(),args.packagePath),
+        absInstallPath = path.join(process.cwd(),'node_modules');
+    if (options.dry) logger.info(`ℹ️  Looking for package.json in ${absPackagePath}`);
+    fs.readFile(
+        path.join(absPackagePath,'package.json'),
+        (err, file)=>{
+            if (err || !file) logger.error(`❌  Couldn't access package.json: ${err||'file empty'}`);
+            logger.info(file);
+        }
+    );
+    fs.lstat(path.join(absInstallPath),
+        (err, info)=>{
+            if (err || !info.isDirectory()) logger.error(`❌  Couldn't access node_modules: ${err||'not a directory'}`);
+            logger.info(`🗑  Deleting ${absInstallPath}`);
+            logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}`)
+        }
+    );
+    //fs.copyFile()
+    if (options.dry) logger.info(`ℹ️  Looking for node_modules in ${process.cwd()}`);
 }
