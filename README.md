@@ -1,9 +1,7 @@
 
 ![FPM](https://github.com/GUSCRAWFORD/fpm/raw/master/fpm-logo.png)
 
-# ⚠️ fpm
-
-*in early beta*
+⚠️ *in early beta*
 
 
 ## The Fake / Faux / Fugazzi Package Manager
@@ -28,8 +26,10 @@ fpm install path/to/my-package
 Transform a `package.json` in a project, and copy it into a `dist` folder
 
 ```
-fpm transform path/to/package
+fpm transform path/to/package --distFolder dist
 ```
+
+The above example will output the `package.json` found at `path/to/package` to `path/to/package/dist/package.json`; the `--distFolder` option by default is `dist`.
 
 Annotate your `package.json` as so:
 

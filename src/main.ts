@@ -144,10 +144,16 @@ function installCommand(args, options, logger) {
     } // copyPackage(...)
     function copy(src:string, dest:string) {
         fs.lstat(src, (err,info)=>{
-            if (err) return err;
+            if (err) {
+                logger.error(`❌  Couldn't lstat ${src}: ${err}`);
+                return err;
+            }
             if (info.isDirectory())
                 if (!options.dry) fs.mkdir(dest, (err,done)=>{
-                    if (err) return err;
+                    if (err) {
+                        logger.error(`❌  Couldn't mkdir ${dest}: ${err}`);
+                        return err;
+                    }
                     read();
                 });
                 else read();
@@ -162,7 +168,10 @@ function installCommand(args, options, logger) {
             else logger.info(`☑️  Would copy ${dest}`);
             function read() {
                 fs.readdir(src, (err, items)=>{
-                    if (err) return err;
+                    if (err) {
+                        logger.error(`❌  Couldn't read ${src}: ${err}`);
+                        return err;
+                    }
                     logger.info(`📁  Copying ${src} to ${dest}`);
                     items.forEach(
                         item=>{
