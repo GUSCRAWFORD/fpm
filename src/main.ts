@@ -116,6 +116,8 @@ function installCommand(args, options, logger) {
                                 logger.error(`❌  Couldn't remove ${absInstallPath}`);
                                 return;
                             }
+                            if(options.dry) logger.info(`☑️  Would have removed ${absInstallPath}`);
+                            else logger.info(`✅  Removed ${absInstallPath}`);
                             logger.info(`📂  Copying ${absPackagePath} to ${absInstallPath}}`);
                             copy(absPackagePath, absInstallPath);
 
@@ -134,17 +136,20 @@ function installCommand(args, options, logger) {
         fs.lstat(src, (err,info)=>{
             if (err) return err;
             if (info.isDirectory())
-                fs.readdir(src, (err, items)=>{
+                fs.mkdir(dest, (err,done)=>{
                     if (err) return err;
-                    logger.info(`📁  Copying ${src} to ${dest}`);
-                    items.forEach(
-                        item=>{
-                            var srcFile = path.join(src, item), destFile = path.join(dest,item);
-                            logger.info(`📄  Copying ${srcFile} to ${destFile}`);
-                            copy(srcFile, destFile);
-                        }
-                    );
-                });
+                    fs.readdir(src, (err, items)=>{
+                        if (err) return err;
+                        logger.info(`📁  Copying ${src} to ${dest}`);
+                        items.forEach(
+                            item=>{
+                                var srcFile = path.join(src, item), destFile = path.join(dest,item);
+                                logger.info(`📄  Copying ${srcFile} to ${destFile}`);
+                                copy(srcFile, destFile);
+                            }
+                        );
+                    });
+                })
             else if (!options.dry)
                 fs.copyFile(
                     src, dest,
