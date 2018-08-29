@@ -2,7 +2,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 require('source-map-support').install();
-const prog = require('caporal'), path = require('path'), fs = require('fs');
+const prog = require('caporal'), path = require('path'), fs = require('fs'), rmrf = require('rimraf');
 prog
     .version(require('../../package.json').version)
     .command('transform', 'Copy package.json and transform')
@@ -95,12 +95,25 @@ function installCommand(args, options, logger) {
             logger.info(file);
             const packageData = JSON.parse(file), absInstallPath = path.join(absNodeModulesPath, packageData.name);
             fs.lstat(path.join(absNodeModulesPath), (err, info) => {
-                if (err || !info.isDirectory())
+                if (err || !info.isDirectory()) {
                     logger.error(`❌  Couldn't access node_modules: ${err || 'not a directory'}`);
+                    return;
+                }
                 logger.info(`🗑  Deleting ${absInstallPath}`);
-                logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}}`);
-                copy(absPackagePath, absInstallPath);
-            });
+                if (!options.dry)
+                    rmrf(absInstallPath, (err, done) => {
+                        if (err) {
+                            logger.error(`❌  Couldn't remove ${absInstallPath}`);
+                            return;
+                        }
+                        logger.info(`📂  Copying ${absPackagePath} to ${absInstallPath}}`);
+                        copy(absPackagePath, absInstallPath);
+                    }); // rmrf
+                else {
+                    logger.info(`📂  Would be copying ${absPackagePath} to ${absInstallPath}}`);
+                    copy(absPackagePath, absInstallPath);
+                }
+            }); // lstat
         });
     } // copyPackage(...)
     function copy(src, dest) {
@@ -111,7 +124,12 @@ function installCommand(args, options, logger) {
                 fs.readdir(src, (err, items) => {
                     if (err)
                         return err;
-                    items.forEach(item => copy(path.join(src, item), path.join(dest, item)));
+                    logger.info(`📁  Copying ${src} to ${dest}`);
+                    items.forEach(item => {
+                        var srcFile = path.join(src, item), destFile = path.join(dest, item);
+                        logger.info(`📄  Copying ${srcFile} to ${destFile}`);
+                        copy(srcFile, destFile);
+                    });
                 });
             else if (!options.dry)
                 fs.copyFile(src, dest, (err, done) => err ?

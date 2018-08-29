@@ -3,7 +3,7 @@
 import { copyFile } from "fs";
 
 require('source-map-support').install();
-const prog = require('caporal'), path = require('path'), fs = require('fs');
+const prog = require('caporal'), path = require('path'), fs = require('fs'), rmrf = require('rimraf');
 prog
     .version(require('../../package.json').version)
     .command('transform', 'Copy package.json and transform')
@@ -106,12 +106,27 @@ function installCommand(args, options, logger) {
                     absInstallPath = path.join(absNodeModulesPath, packageData.name);
                 fs.lstat(path.join(absNodeModulesPath),
                     (err, info)=>{
-                        if (err || !info.isDirectory()) logger.error(`❌  Couldn't access node_modules: ${err||'not a directory'}`);
+                        if (err || !info.isDirectory()) {
+                            logger.error(`❌  Couldn't access node_modules: ${err||'not a directory'}`);
+                            return;
+                        }
                         logger.info(`🗑  Deleting ${absInstallPath}`);
-                        logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}}`);
-                        copy(absPackagePath, absInstallPath);
-                    }
-                );
+                        if (!options.dry) rmrf(absInstallPath, (err, done)=>{
+                            if (err) {
+                                logger.error(`❌  Couldn't remove ${absInstallPath}`);
+                                return;
+                            }
+                            logger.info(`📂  Copying ${absPackagePath} to ${absInstallPath}}`);
+                            copy(absPackagePath, absInstallPath);
+
+
+                        }); // rmrf
+                        else {
+                            logger.info(`📂  Would be copying ${absPackagePath} to ${absInstallPath}}`);
+                            copy(absPackagePath, absInstallPath);
+                        }
+                    } 
+                ); // lstat
             }
         );
     } // copyPackage(...)
@@ -121,11 +136,13 @@ function installCommand(args, options, logger) {
             if (info.isDirectory())
                 fs.readdir(src, (err, items)=>{
                     if (err) return err;
+                    logger.info(`📁  Copying ${src} to ${dest}`);
                     items.forEach(
-                        item=>copy(
-                            path.join(src, item),
-                            path.join(dest,item)
-                        )
+                        item=>{
+                            var srcFile = path.join(src, item), destFile = path.join(dest,item);
+                            logger.info(`📄  Copying ${srcFile} to ${destFile}`);
+                            copy(srcFile, destFile);
+                        }
                     );
                 });
             else if (!options.dry)

@@ -1,12 +1,14 @@
 {
   "name": "@guscrawford.com/fpm",
-  "version": "0.0.0-alpha-rev8",
+  "version": "0.0.0-alpha-rev9",
   "main": "./dist/bin/main.js",
   "repository": "https://github.com/GUSCRAWFORD/fpm.git",
   "author": "Gus <crawford.gus@gmail.com>",
   "license": "MIT",
   "private": false,
-  "bin": {"fpm":"./dist/bin/main.js"},
+  "bin": {
+    "fpm": "./dist/bin/main.js"
+  },
   "scripts": {
     "clean": "echo \"🗑  Cleaning build...\" && rm -rf bin",
     "build": "echo \"🛠  Building fpm\" && tsc",
@@ -16,7 +18,9 @@
     "@types/node": "^10.9.3"
   },
   "dependencies": {
+    "@types/rimraf": "^2.0.2",
     "caporal": "^0.10.0",
+    "rimraf": "^2.6.2",
     "source-map-support": "^0.5.9"
   },
   "@package:transform": {
