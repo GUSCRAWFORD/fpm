@@ -16,6 +16,16 @@ prog
         .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
         .argument('[packagePaths...]', 'additional packages to install')
         .option('--dry','don\'t make any actual writes, print an effect report')
+        .action(installCommand)
+    .command('add','Copy a working package into another working package\'s node_modules folder')
+        .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
+        .argument('[packagePaths...]', 'additional packages to install')
+        .option('--dry','don\'t make any actual writes, print an effect report')
+        .action(installCommand)
+    .command('i','Copy a working package into another working package\'s node_modules folder')
+        .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
+        .argument('[packagePaths...]', 'additional packages to install')
+        .option('--dry','don\'t make any actual writes, print an effect report')
         .action(installCommand);
 ;
 prog.parse(process.argv);
@@ -41,20 +51,20 @@ function transformCommand(args, options, logger) {
             var packageData = JSON.parse(packageJson);
             logger.info(`♻️  Transforming: ${path.join(absPath,'package.json')} to ${path.join(absPath,options.distFolder||'dist','package.json')}`)
             if (options.dry) logger.info(packageData);
-            if (packageData["@package:transform"]) {
-                Object.keys(packageData["@package:transform"]).forEach(keyToTransform=>{
-                    logger.info(packageData["@package:transform"][keyToTransform])
-                    switch(typeof (packageData["@package:transform"][keyToTransform]) ) {
+            if (packageData["@fpm:transform"]) {
+                Object.keys(packageData["@fpm:transform"]).forEach(keyToTransform=>{
+                    logger.info(packageData["@fpm:transform"][keyToTransform])
+                    switch(typeof (packageData["@fpm:transform"][keyToTransform]) ) {
                         case "object":
-                            Object.keys(packageData["@package:transform"][keyToTransform]).forEach(opr=>{
+                            Object.keys(packageData["@fpm:transform"][keyToTransform]).forEach(opr=>{
                                 switch(opr) {
 
-                                    case '@package:replace':
-                                        Object.keys(packageData["@package:transform"][keyToTransform][opr])
+                                    case '@fpm:replace':
+                                        Object.keys(packageData["@fpm:transform"][keyToTransform][opr])
                                             .forEach(replace=>
                                                 packageData[keyToTransform] = packageData[keyToTransform].replace(
                                                     new RegExp(replace, 'g'),
-                                                    packageData["@package:transform"][keyToTransform][opr][replace]
+                                                    packageData["@fpm:transform"][keyToTransform][opr][replace]
                                                 )
                                             );
                                     break;
@@ -63,8 +73,8 @@ function transformCommand(args, options, logger) {
                             });
                             break;
                         case "string":
-                            switch(packageData["@package:transform"][keyToTransform]) {
-                                case '@package:remove':
+                            switch(packageData["@fpm:transform"][keyToTransform]) {
+                                case '@fpm:remove':
                                     delete packageData[keyToTransform];
                                 break;
                                 default:
@@ -73,7 +83,7 @@ function transformCommand(args, options, logger) {
                 });
                 
             }
-                    delete packageData["@package:transform"];
+                    delete packageData["@fpm:transform"];
             if (options.dry) logger.info(`✅  Into:`);
             if (options.dry) logger.info(packageData);
             savePackage(JSON.stringify(packageData, null, '\t'), `${path.join(absPath, options.distFolder||'dist','package.json')}`);
@@ -136,20 +146,11 @@ function installCommand(args, options, logger) {
         fs.lstat(src, (err,info)=>{
             if (err) return err;
             if (info.isDirectory())
-                fs.mkdir(dest, (err,done)=>{
+                if (!options.dry) fs.mkdir(dest, (err,done)=>{
                     if (err) return err;
-                    fs.readdir(src, (err, items)=>{
-                        if (err) return err;
-                        logger.info(`📁  Copying ${src} to ${dest}`);
-                        items.forEach(
-                            item=>{
-                                var srcFile = path.join(src, item), destFile = path.join(dest,item);
-                                logger.info(`📄  Copying ${srcFile} to ${destFile}`);
-                                copy(srcFile, destFile);
-                            }
-                        );
-                    });
-                })
+                    read();
+                });
+                else read();
             else if (!options.dry)
                 fs.copyFile(
                     src, dest,
@@ -158,7 +159,20 @@ function installCommand(args, options, logger) {
                             logger.error(`❌  Didn't copy ${dest}: (${err})`):
                                 logger.info(`✅  Copied ${dest}`)
                 );
-            else logger.info(`☑️  Would copy ${dest}`)
-        })
+            else logger.info(`☑️  Would copy ${dest}`);
+            function read() {
+                fs.readdir(src, (err, items)=>{
+                    if (err) return err;
+                    logger.info(`📁  Copying ${src} to ${dest}`);
+                    items.forEach(
+                        item=>{
+                            var srcFile = path.join(src, item), destFile = path.join(dest,item);
+                            logger.info(`📄  Copying ${srcFile} to ${destFile}`);
+                            copy(srcFile, destFile);
+                        }
+                    );
+                });
+            }
+        });
     }
 }

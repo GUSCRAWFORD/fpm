@@ -1,11 +1,12 @@
 {
   "name": "@guscrawford.com/fpm",
-  "version": "0.0.0-alpha-rev10b",
+  "version": "0.0.1",
   "main": "./dist/bin/main.js",
   "repository": "https://github.com/GUSCRAWFORD/fpm.git",
   "author": "Gus <crawford.gus@gmail.com>",
   "license": "MIT",
   "private": false,
+  "icon": "fpm-icon.png",
   "bin": {
     "fpm": "./dist/bin/main.js"
   },
@@ -23,10 +24,10 @@
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.9"
   },
-  "@package:transform": {
-    "scripts": "@package:remove",
+  "@fpm:transform": {
+    "scripts": "@fpm:remove",
     "main": {
-      "@package:replace": {
+      "@fpm:replace": {
         "dist\\/": ""
       }
     }

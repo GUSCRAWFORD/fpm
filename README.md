@@ -3,12 +3,12 @@
 
 # ⚠️ fpm
 
-*in early alpha*
+*in early beta*
 
 
 ## The Fake / Faux / Fugazzi Package Manager
 
-Manage interdependant packages that are under development; transform `package.json`'s for a working package into the package's `dist` folder.
+Manage interdependant packages that are under development.
 
 ```
 echo "🔑  May require elevated privs"
@@ -21,4 +21,25 @@ Install a package to your working directory's node_modules folder
 
 ```
 fpm install path/to/my-package
+```
+
+## fpm transform
+
+Transform a `package.json` in a project, and copy it into a `dist` folder
+
+```
+fpm transform path/to/package
+```
+
+Annotate your `package.json` as so:
+
+```
+{
+    "scripts":{
+        "build":"echo building..."
+    },
+    "@fpm:transform":{
+        "scripts":"@fpm:remove"
+    }
+}
 ```
