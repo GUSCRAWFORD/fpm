@@ -1,5 +1,5 @@
 
-![FPM](https://github.com/GUSCRAWFORD/fpm/raw/master/fpm-logo.svg)
+![FPM](https://github.com/GUSCRAWFORD/fpm/raw/master/fpm-logo.png)
 
 # ⚠️ fpm
 

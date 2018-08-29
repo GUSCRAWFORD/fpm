@@ -1,6 +1,6 @@
 {
   "name": "@guscrawford.com/fpm",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./dist/bin/main.js",
   "repository": "https://github.com/GUSCRAWFORD/fpm.git",
   "author": "Gus <crawford.gus@gmail.com>",
