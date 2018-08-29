@@ -6,6 +6,7 @@
   "author": "Gus <crawford.gus@gmail.com>",
   "license": "MIT",
   "private": false,
+  "bin":"fpm",
   "scripts":{
     "clean":"echo \"🗑  Cleaning build...\" && rm -rf bin",
     "build":"echo \"🛠  Building fpm\" && tsc",
