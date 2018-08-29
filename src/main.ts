@@ -90,16 +90,18 @@ function installCommand(args, options, logger) {
     if (options.dry) logger.info(`ℹ️  Looking for package.json in ${absPackagePath}`);
     fs.readFile(
         path.join(absPackagePath,'package.json'),
+        {encoding:'utf8'},
         (err, file)=>{
             if (err || !file) logger.error(`❌  Couldn't access package.json: ${err||'file empty'}`);
             logger.info(file);
-        }
-    );
-    fs.lstat(path.join(absInstallPath),
-        (err, info)=>{
-            if (err || !info.isDirectory()) logger.error(`❌  Couldn't access node_modules: ${err||'not a directory'}`);
-            logger.info(`🗑  Deleting ${absInstallPath}`);
-            logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}`)
+            var package = JSON.parse(file);
+            fs.lstat(path.join(absInstallPath),
+                (err, info)=>{
+                    if (err || !info.isDirectory()) logger.error(`❌  Couldn't access node_modules: ${err||'not a directory'}`);
+                    logger.info(`🗑  Deleting ${absInstallPath}`);
+                    logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}/${package.name}`)
+                }
+            );
         }
     );
     //fs.copyFile()

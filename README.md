@@ -1,4 +1,6 @@
-# fpm
+# ⚠️ fpm
+
+*in early alpha*
 
 ![FPM](fpm-logo.svg)
 
