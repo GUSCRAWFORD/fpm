@@ -1,8 +1,10 @@
+
+![FPM](fpm-logo.png)
+
 # ⚠️ fpm
 
 *in early alpha*
 
-![FPM](fpm-logo.svg)
 
 ## The Fake / Faux / Fugazzi Package Manager
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 require('source-map-support').install();
 const prog = require('caporal'), path = require('path'), fs = require('fs');
 prog
@@ -11,6 +13,7 @@ prog
     .action(transformCommand)
     .command('install', 'Copy a working package into another working package\'s node_modules folder')
     .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
+    .argument('[packagePaths...]', 'additional packages to install')
     .option('--dry', 'don\'t make any actual writes, print an effect report')
     .action(installCommand);
 ;
@@ -34,41 +37,41 @@ function transformCommand(args, options, logger) {
                 logger.error(error);
                 return error;
             }
-            var package = JSON.parse(packageJson);
+            var packageData = JSON.parse(packageJson);
             logger.info(`♻️  Transforming: ${path.join(absPath, 'package.json')} to ${path.join(absPath, options.distFolder || 'dist', 'package.json')}`);
             if (options.dry)
-                logger.info(package);
-            if (package["@package:transform"]) {
-                Object.keys(package["@package:transform"]).forEach(keyToTransform => {
-                    logger.info(package["@package:transform"][keyToTransform]);
-                    switch (typeof (package["@package:transform"][keyToTransform])) {
+                logger.info(packageData);
+            if (packageData["@package:transform"]) {
+                Object.keys(packageData["@package:transform"]).forEach(keyToTransform => {
+                    logger.info(packageData["@package:transform"][keyToTransform]);
+                    switch (typeof (packageData["@package:transform"][keyToTransform])) {
                         case "object":
-                            Object.keys(package["@package:transform"][keyToTransform]).forEach(opr => {
+                            Object.keys(packageData["@package:transform"][keyToTransform]).forEach(opr => {
                                 switch (opr) {
                                     case '@package:replace':
-                                        Object.keys(package["@package:transform"][keyToTransform][opr])
-                                            .forEach(replace => package[keyToTransform] = package[keyToTransform].replace(new RegExp(replace, 'g'), package["@package:transform"][keyToTransform][opr][replace]));
+                                        Object.keys(packageData["@package:transform"][keyToTransform][opr])
+                                            .forEach(replace => packageData[keyToTransform] = packageData[keyToTransform].replace(new RegExp(replace, 'g'), packageData["@package:transform"][keyToTransform][opr][replace]));
                                         break;
                                     default:
                                 }
                             });
                             break;
                         case "string":
-                            switch (package["@package:transform"][keyToTransform]) {
+                            switch (packageData["@package:transform"][keyToTransform]) {
                                 case '@package:remove':
-                                    delete package[keyToTransform];
+                                    delete packageData[keyToTransform];
                                     break;
                                 default:
                             }
                     }
                 });
             }
-            delete package["@package:transform"];
+            delete packageData["@package:transform"];
             if (options.dry)
                 logger.info(`✅  Into:`);
             if (options.dry)
-                logger.info(package);
-            savePackage(JSON.stringify(package, null, '\t'), `${path.join(absPath, options.distFolder || 'dist', 'package.json')}`);
+                logger.info(packageData);
+            savePackage(JSON.stringify(packageData, null, '\t'), `${path.join(absPath, options.distFolder || 'dist', 'package.json')}`);
         }
     }
     function savePackage(packageData, packagePath) {
@@ -80,23 +83,43 @@ function transformCommand(args, options, logger) {
     }
 }
 function installCommand(args, options, logger) {
-    const absPackagePath = path.join(process.cwd(), args.packagePath), absInstallPath = path.join(process.cwd(), 'node_modules');
-    if (options.dry)
-        logger.info(`ℹ️  Looking for package.json in ${absPackagePath}`);
-    fs.readFile(path.join(absPackagePath, 'package.json'), { encoding: 'utf8' }, (err, file) => {
-        if (err || !file)
-            logger.error(`❌  Couldn't access package.json: ${err || 'file empty'}`);
-        logger.info(file);
-        var package = JSON.parse(file);
-        fs.lstat(path.join(absInstallPath), (err, info) => {
-            if (err || !info.isDirectory())
-                logger.error(`❌  Couldn't access node_modules: ${err || 'not a directory'}`);
-            logger.info(`🗑  Deleting ${absInstallPath}`);
-            logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}/${package.name}`);
+    args.packagePaths.push(args.packagePath);
+    args.packagePaths.forEach(packagePath => copyPackage(packagePath));
+    function copyPackage(packagePath) {
+        const absPackagePath = path.join(process.cwd(), packagePath), absNodeModulesPath = path.join(process.cwd(), 'node_modules');
+        if (options.dry)
+            logger.info(`ℹ️  Looking for package.json in ${absPackagePath}`);
+        fs.readFile(path.join(absPackagePath, 'package.json'), { encoding: 'utf8' }, (err, file) => {
+            if (err || !file)
+                logger.error(`❌  Couldn't access package.json: ${err || 'file empty'}`);
+            logger.info(file);
+            const packageData = JSON.parse(file), absInstallPath = path.join(absNodeModulesPath, packageData.name);
+            fs.lstat(path.join(absNodeModulesPath), (err, info) => {
+                if (err || !info.isDirectory())
+                    logger.error(`❌  Couldn't access node_modules: ${err || 'not a directory'}`);
+                logger.info(`🗑  Deleting ${absInstallPath}`);
+                logger.info(`📂 - 📄 - 📁 Copying ${absPackagePath} to ${absInstallPath}}`);
+                copy(absPackagePath, absInstallPath);
+            });
         });
-    });
-    //fs.copyFile()
-    if (options.dry)
-        logger.info(`ℹ️  Looking for node_modules in ${process.cwd()}`);
+    } // copyPackage(...)
+    function copy(src, dest) {
+        fs.lstat(src, (err, info) => {
+            if (err)
+                return err;
+            if (info.isDirectory())
+                fs.readdir(src, (err, items) => {
+                    if (err)
+                        return err;
+                    items.forEach(item => copy(path.join(src, item), path.join(dest, item)));
+                });
+            else if (!options.dry)
+                fs.copyFile(src, dest, (err, done) => err ?
+                    logger.error(`❌  Didn't copy ${dest}: (${err})`) :
+                    logger.info(`✅  Copied ${dest}`));
+            else
+                logger.info(`☑️  Would copy ${dest}`);
+        });
+    }
 }
 //# sourceMappingURL=main.js.map
