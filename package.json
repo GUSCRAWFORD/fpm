@@ -1,0 +1,14 @@
+{
+  "name": "@guscrawford.com/fpm",
+  "version": "0.0.0-alpha",
+  "main": "dist/bin/main.js",
+  "repository": "https://github.com/GUSCRAWFORD/fpm.git",
+  "author": "Gus <crawford.gus@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts":{
+    "clean":"echo \"🗑  Cleaning build...\" && rm -rf bin",
+    "build":"echo \"🛠  Building fpm\" && tsc",
+    "preview":"echo \"👁  Previewing fpm binary...\" && echo \"⚠️  Overwriting your global version of fpm\" && rm -rf \"C:\\Users\\guscr\\AppData\\Local\\Yarn\\config\\global\\node_modules\\@guscrawford.com\\fpm\" && yarn run clean && yarn run build && echo \"🔄  Replacing your sources & binary..\" && cp -r \".\" \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/loft-interface\" && echo \"🔑  Setting execute permission... 👤 👟\" && chmod u+x ~/.config/yarn/global/node_modules/@guscrawford.com/loft-interface/bin/main.js"
+  }
+}
