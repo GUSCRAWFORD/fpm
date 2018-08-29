@@ -1,13 +1,14 @@
 #!/usr/bin/env node
+require('source-map-support').install();
 const prog = require('caporal'), path = require('path'), fs = require('fs');
 prog
-    .version(require('./package.json').version)
+    .version(require('../package.json').version)
     .command('transform', 'Copy package.json and transform')
         .argument('<directory>', 'path to app that will be packaged')
         .argument('[directories...]', 'additional paths to package')
         .option('--distFolder','the path to the output directory of your published package, \'dist\' by default')
         .option('--dry','don\'t do anything, print the effect of the operation')
-            .action(distCommand)
+            .action(transformCommand)
     .command('install','Copy a working package into another working package\'s node_modules folder')
         .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
         .option('--dry','don\'t make any actual writes, print an effect report')
@@ -38,16 +39,37 @@ function transformCommand(args, options, logger) {
             if (options.dry) logger.info(package);
             if (package["@package:transform"]) {
                 Object.keys(package["@package:transform"]).forEach(keyToTransform=>{
-                    switch(package["@package:transform"][keyToTransform]) {
-                        case '@package:remove':
-                            delete package[keyToTransform];
-                        break;
-                        default:
+                    logger.info(package["@package:transform"][keyToTransform])
+                    switch(typeof (package["@package:transform"][keyToTransform]) ) {
+                        case "object":
+                            Object.keys(package["@package:transform"][keyToTransform]).forEach(opr=>{
+                                switch(opr) {
+
+                                    case '@package:replace':
+                                        Object.keys(package["@package:transform"][keyToTransform][opr])
+                                            .forEach(replace=>
+                                                package[keyToTransform] = package[keyToTransform].replace(
+                                                    new RegExp(replace, 'g'),
+                                                    package["@package:transform"][keyToTransform][opr][replace]
+                                                )
+                                            );
+                                    break;
+                                    default:
+                                }
+                            });
+                            break;
+                        case "string":
+                            switch(package["@package:transform"][keyToTransform]) {
+                                case '@package:remove':
+                                    delete package[keyToTransform];
+                                break;
+                                default:
+                            }
                     }
-                    delete package["@package:transform"];
                 });
                 
             }
+                    delete package["@package:transform"];
             if (options.dry) logger.info(`✅  Into:`);
             if (options.dry) logger.info(package);
             savePackage(JSON.stringify(package, null, '\t'), `${path.join(absPath, options.distFolder||'dist','package.json')}`);

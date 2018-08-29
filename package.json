@@ -6,10 +6,26 @@
   "author": "Gus <crawford.gus@gmail.com>",
   "license": "MIT",
   "private": false,
-  "bin":"fpm",
-  "scripts":{
-    "clean":"echo \"🗑  Cleaning build...\" && rm -rf bin",
-    "build":"echo \"🛠  Building fpm\" && tsc",
-    "preview":"echo \"👁  Previewing fpm binary...\" && echo \"⚠️  Overwriting your global version of fpm\" && rm -rf \"C:\\Users\\guscr\\AppData\\Local\\Yarn\\config\\global\\node_modules\\@guscrawford.com\\fpm\" && yarn run clean && yarn run build && echo \"🔄  Replacing your sources & binary..\" && cp -r \".\" \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/loft-interface\" && echo \"🔑  Setting execute permission... 👤 👟\" && chmod u+x ~/.config/yarn/global/node_modules/@guscrawford.com/loft-interface/bin/main.js"
+  "bin": "fpm",
+  "scripts": {
+    "clean": "echo \"🗑  Cleaning build...\" && rm -rf bin",
+    "build": "echo \"🛠  Building fpm\" && tsc",
+    "fpm": "node dist/bin/main.js",
+    "preview": "echo \"👁  Previewing fpm binary...\" && echo \"⚠️  Overwriting your global version of fpm\" && rm -rf \"~/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && yarn run clean && yarn run build && echo \"🔄  Replacing your sources & binary..\" && cp -r \".\" \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && echo \"🔑  Setting execute permission... 👤 👟\" && chmod u+x ~/.config/yarn/global/node_modules/@guscrawford.com/fpm/dist/bin/main.js"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.3"
+  },
+  "dependencies": {
+    "caporal": "^0.10.0",
+    "source-map-support": "^0.5.9"
+  },
+  "@package:transform": {
+    "scripts": "@package:remove",
+    "main": {
+      "@package:replace": {
+        "dist\\/": ""
+      }
+    }
   }
 }
