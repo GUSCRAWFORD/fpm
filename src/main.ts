@@ -2,7 +2,7 @@
 require('source-map-support').install();
 const prog = require('caporal'), path = require('path'), fs = require('fs');
 prog
-    .version(require('../package.json').version)
+    .version(require('../../package.json').version)
     .command('transform', 'Copy package.json and transform')
         .argument('<directory>', 'path to app that will be packaged')
         .argument('[directories...]', 'additional paths to package')

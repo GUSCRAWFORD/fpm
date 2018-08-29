@@ -1,12 +1,12 @@
 {
   "name": "@guscrawford.com/fpm",
-  "version": "0.0.0-alpha",
+  "version": "0.0.0-alpha-rev4",
   "main": "dist/bin/main.js",
   "repository": "https://github.com/GUSCRAWFORD/fpm.git",
   "author": "Gus <crawford.gus@gmail.com>",
   "license": "MIT",
   "private": false,
-  "bin": "fpm",
+  "bin": {"fpm":"dist/bin/main.js"},
   "scripts": {
     "clean": "echo \"🗑  Cleaning build...\" && rm -rf bin",
     "build": "echo \"🛠  Building fpm\" && tsc",
