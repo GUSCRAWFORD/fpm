@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const install_command_1 = require("./install-command");
 require('source-map-support').install();
 const prog = require('caporal'), path = require('path'), fs = require('fs'), rmrf = require('rimraf');
+install_command_1.InstallCommand.capture();
 prog
     .version(require('../../package.json').version)
     .command('transform', 'Copy package.json and transform')
@@ -11,21 +13,13 @@ prog
     .option('--distFolder', 'the path to the output directory of your published package, \'dist\' by default')
     .option('--dry', 'don\'t do anything, print the effect of the operation')
     .action(transformCommand)
-    .command('install', 'Copy a working package into another working package\'s node_modules folder')
-    .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
-    .argument('[packagePaths...]', 'additional packages to install')
-    .option('--dry', 'don\'t make any actual writes, print an effect report')
-    .action(installCommand)
     .command('add', 'Copy a working package into another working package\'s node_modules folder')
+    .help('accepted variants: install, i')
     .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
     .argument('[packagePaths...]', 'additional packages to install')
     .option('--dry', 'don\'t make any actual writes, print an effect report')
-    .action(installCommand)
-    .command('i', 'Copy a working package into another working package\'s node_modules folder')
-    .argument('<packagePath>', 'relative path to package to install in the node_modules of the current working directory')
-    .argument('[packagePaths...]', 'additional packages to install')
-    .option('--dry', 'don\'t make any actual writes, print an effect report')
-    .action(installCommand);
+    .option('--verbose', 'print details')
+    .action(install_command_1.InstallCommand.from);
 ;
 prog.parse(process.argv);
 function transformCommand(args, options, logger) {
@@ -90,84 +84,6 @@ function transformCommand(args, options, logger) {
         else
             fs.writeFile(packagePath, packageData, 'utf8', (err, done) => err ? logger.error(`❌  ${err}`) :
                 logger.info(`📝  ${packagePath}`));
-    }
-}
-function installCommand(args, options, logger) {
-    args.packagePaths.push(args.packagePath);
-    args.packagePaths.forEach(packagePath => copyPackage(packagePath));
-    function copyPackage(packagePath) {
-        const absPackagePath = path.join(process.cwd(), packagePath), absNodeModulesPath = path.join(process.cwd(), 'node_modules');
-        if (options.dry)
-            logger.info(`ℹ️  Looking for package.json in ${absPackagePath}`);
-        fs.readFile(path.join(absPackagePath, 'package.json'), { encoding: 'utf8' }, (err, file) => {
-            if (err || !file)
-                logger.error(`❌  Couldn't access package.json: ${err || 'file empty'}`);
-            logger.info(file);
-            const packageData = JSON.parse(file), absInstallPath = path.join(absNodeModulesPath, packageData.name);
-            fs.lstat(path.join(absNodeModulesPath), (err, info) => {
-                if (err || !info.isDirectory()) {
-                    logger.error(`❌  Couldn't access node_modules: ${err || 'not a directory'}`);
-                    return;
-                }
-                logger.info(`🗑  Deleting ${absInstallPath}`);
-                if (!options.dry)
-                    rmrf(absInstallPath, (err, done) => {
-                        if (err) {
-                            logger.error(`❌  Couldn't remove ${absInstallPath}`);
-                            return;
-                        }
-                        if (options.dry)
-                            logger.info(`☑️  Would have removed ${absInstallPath}`);
-                        else
-                            logger.info(`✅  Removed ${absInstallPath}`);
-                        logger.info(`📂  Copying ${absPackagePath} to ${absInstallPath}}`);
-                        copy(absPackagePath, absInstallPath);
-                    }); // rmrf
-                else {
-                    logger.info(`📂  Would be copying ${absPackagePath} to ${absInstallPath}}`);
-                    copy(absPackagePath, absInstallPath);
-                }
-            }); // lstat
-        });
-    } // copyPackage(...)
-    function copy(src, dest) {
-        fs.lstat(src, (err, info) => {
-            if (err) {
-                logger.error(`❌  Couldn't lstat ${src}: ${err}`);
-                return err;
-            }
-            if (info.isDirectory())
-                if (!options.dry)
-                    fs.mkdir(dest, (err, done) => {
-                        if (err) {
-                            logger.error(`❌  Couldn't mkdir ${dest}: ${err}`);
-                            return err;
-                        }
-                        read();
-                    });
-                else
-                    read();
-            else if (!options.dry)
-                fs.copyFile(src, dest, (err, done) => err ?
-                    logger.error(`❌  Didn't copy ${dest}: (${err})`) :
-                    logger.info(`✅  Copied ${dest}`));
-            else
-                logger.info(`☑️  Would copy ${dest}`);
-            function read() {
-                fs.readdir(src, (err, items) => {
-                    if (err) {
-                        logger.error(`❌  Couldn't read ${src}: ${err}`);
-                        return err;
-                    }
-                    logger.info(`📁  Copying ${src} to ${dest}`);
-                    items.forEach(item => {
-                        var srcFile = path.join(src, item), destFile = path.join(dest, item);
-                        logger.info(`📄  Copying ${srcFile} to ${destFile}`);
-                        copy(srcFile, destFile);
-                    });
-                });
-            }
-        });
     }
 }
 //# sourceMappingURL=main.js.map
