@@ -11,7 +11,7 @@
     "fpm": "./dist/bin/main.js"
   },
   "scripts": {
-    "clean": "echo \"🗑  Cleaning build...\" && rm -rf bin",
+    "clean": "echo \"🗑  Cleaning build...\" && rm -rf dist",
     "build": "echo \"🛠  Building fpm\" && tsc && cp README.md dist/. && node dist/bin/main transform .",
     "preview": "echo \"👁  Previewing fpm binary (hacky way: TODO: turn this into an -g command)...\" && echo \"⚠️  Overwriting your global version of fpm\" && rm -rf \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && yarn run clean && yarn run build && echo \"🔄  Replacing your sources & binary..\" && cp -r /Users/guscrawford/fpm \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && echo \"🔑  Setting execute permission... 👤 👟\" && chmod u+x ~/.config/yarn/global/node_modules/@guscrawford.com/fpm/dist/bin/main.js"
   },
