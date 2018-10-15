@@ -8,7 +8,7 @@ const prog = require('caporal'), path = require('path'), fs = require('fs'), rmr
 InstallCommand.capture();
 TransformCommand.capture();
 prog
-    .version(require('../../package.json').version)
+    .version(require('../package.json').version)
     .command('transform', 'Copy package.json and transform')
         .help('accepted variants: t, package, p')
         .argument('<directory>', 'path to app that will be packaged')
