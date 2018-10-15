@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8] - 2018-10-12
+
+### Changes
+  - `transform` command also removes `@fpm:transform` property off of master **package.json**
+
+----
 ## [0.0.6] - 2018-09-09
 
 ### Changes

@@ -67,26 +67,29 @@ function installCommand(args, options, logger) {
         );
     } // copyPackage(...)
     function copy(src:string, dest:string) {
+        const absNodeModulesPath = path.join(process.cwd(), 'node_modules/');
         fs.lstat(src, (err,info)=>{
             if (err) {
-                logger.error(`❌  Couldn't lstat ${src}: ${err}`);
+                logger.error(`❌  Couldn't lstat ${src}:\n\t${err}`);
                 return err;
             }
-            if (info.isDirectory())
-                if (!options.dry) fs.mkdir(dest, (err)=>{
+            if (info.isDirectory()) {
+                let ensureDest = dest.slice(absNodeModulesPath.length);
+                if (!options.dry) ensureDirectory(absNodeModulesPath, ensureDest.split(/\/|\\/g), (err)=>{
                     if (err) {
-                        logger.error(`❌  Couldn't mkdir ${dest}: ${err}`);
+                        logger.error(`❌  Couldn't mkdir ${dest}:\n\t${err}`);
                         return err;
                     }
                     read();
                 });
                 else read();
+            }
             else if (!options.dry)
                 fs.copyFile(
                     src, dest,
                     (err)=>
                         err?
-                            logger.error(`❌  Didn't copy ${dest}: (${err})`):
+                            logger.error(`❌  Didn't copy ${dest}:\n\t${err}`):
                             (options.verbose)?logger.info(`✅  Copied ${dest}`):null
                 );
             else logger.info(`☑️  Would copy ${dest}`);
@@ -107,5 +110,18 @@ function installCommand(args, options, logger) {
                 });
             }
         });
+    }
+    function ensureDirectory(cwd:string, paths:string[], callback:(err:any)=>any) {
+        console.info(paths)
+        var ensureDir = paths.shift(), ensurePath = path.join(cwd, ensureDir);
+        console.info(ensurePath);
+        fs.lstat(ensurePath, (err, info)=>err?next():(info&&info.isDirectory()?ensureDirectory(ensurePath, paths, callback):callback(err)));
+        function next() {
+            fs.mkdir(ensurePath, (err)=>{
+                if (err) return callback(err);
+                if (paths.length) return ensureDirectory(ensurePath, paths, callback);
+                else return callback(err);
+            });
+        }
     }
 }
