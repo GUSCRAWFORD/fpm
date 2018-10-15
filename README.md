@@ -18,7 +18,9 @@ yarn global add @guscrawford.com/fpm
 Install a package to your working directory's node_modules folder
 
 ```
-fpm install path/to/my-package
+$ fpm install path/to/my-core-package
+📦  Installing @guscrawford.com/jyve-core@2.0.1c
+  📂 in /Users/me/jyve/mongo/node_modules/@guscrawford.com/jyve-core
 ```
 
 ## fpm transform
@@ -44,4 +46,33 @@ Annotate your `package.json` as so:
 }
 ```
 
+## More Annotation Examples
+
+Replace in string properties
+
+{
+..,
+  "@fpm:transform": {
+    "main": {
+      "@fpm:replace": {
+        "dist\\/": ""
+      }
+    }
+  }
+}
+```
+
+Add properties and data to data properties
+
+{
+..,
+  "@fpm:transform": {
+    "scripts": {
+      "@fpm:add": {
+          "do":"anything you want"
+      }
+    }
+  }
+}
+```
 [![NPM](https://res-5.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco/v1397185970/7ce9936f6f2c2b2b7769c9371ff76caf.png)](https://www.npmjs.com/package/@guscrawford.com/loft-interface)
