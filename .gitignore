@@ -1,2 +1,6 @@
 dist
 node_modules
+.nyc_output
+coverage
+test/bin
+.coverage
