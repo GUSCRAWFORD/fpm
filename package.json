@@ -1,6 +1,6 @@
 {
   "name": "@guscrawford.com/fpm",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "main": "./dist/bin/main.js",
   "repository": "https://github.com/GUSCRAWFORD/fpm.git",
   "author": "Gus <crawford.gus@gmail.com>",
@@ -14,10 +14,33 @@
     "clean": "echo \"🗑  Cleaning build...\" && rm -rf dist",
     "build": "echo \"🛠  Building fpm\" && tsc && cp README.md dist/. && node dist/bin/main transform .",
     "preview": "echo \"👁  Previewing fpm binary (hacky way: TODO: turn this into an -g command)...\" && echo \"⚠️  Overwriting your global version of fpm\" && rm -rf \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && yarn run clean && yarn run build && echo \"🔄  Replacing your sources & binary..\" && cp -r /Users/guscrawford/fpm \"/Users/guscrawford/.config/yarn/global/node_modules/@guscrawford.com/fpm\" && echo \"🔑  Setting execute permission... 👤 👟\" && chmod u+x ~/.config/yarn/global/node_modules/@guscrawford.com/fpm/dist/bin/main.js",
-    "publish:dist":"yarn build && cd dist && npm publish"
+    "publish:dist": "yarn build && cd dist && npm publish",
+    "build:test": "echo \"⚙️  Building API Tests...\" && cd test && tsc",
+    "mocha": "echo \"☕️  Running Mocha...\" && mocha ./test/bin/test/main.test.js",
+    "test": "echo \"🔬  Running Unit Tests...\" && yarn build:test && yarn mocha",
+    "test:coverage": "echo \"📊  Running Unit Tests and Coverage Report...\" && yarn build:test && nyc mocha ./test/bin/test/main.test.js 1> .coverage"
+  },
+  "nyc": {
+    "silent": false,
+    "report-dir": "./coverage",
+    "exclude": [
+      "**/*test.*s",
+      "**/*mocks.*s"
+    ],
+    "reporter": [
+      "mocha",
+      "html",
+      "lcov",
+      "text-lcov"
+    ]
   },
   "devDependencies": {
-    "@types/node": "^10.9.3"
+    "@types/mocha": "^5.2.5",
+    "@types/node": "*",
+    "@types/sinon": "^7.0.3",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
+    "sinon": "^7.2.2"
   },
   "dependencies": {
     "@types/rimraf": "^2.0.2",
@@ -30,6 +53,13 @@
     "main": {
       "@fpm:replace": {
         "dist\\/": ""
+      }
+    },
+    "bin": {
+      "fpm": {
+        "@fpm:replace": {
+          "dist\\/": ""
+        }
       }
     }
   }

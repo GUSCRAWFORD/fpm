@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "rootDir": "src",
-        "outDir": "dist/bin",
+        "rootDir": "../",
+        "outDir": "bin",
         "target": "es6",
         "module": "commonjs",
         "moduleResolution": "node",
@@ -11,7 +11,7 @@
         "sourceMap":true,
         "types":["node"],
         "declaration": true,
-        "declarationDir": "dist"
+        "declarationDir": "bin"
     },
-    "exclude": ["dist","test"]
+    "exclude": ["bin"]
 }
