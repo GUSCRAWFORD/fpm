@@ -44,49 +44,93 @@ function transformCommand(args, options, logger) {
                 Object.keys(packageData["@fpm:transform"]).forEach(keyToTransform=>{
                     if (keyToTransform === "@fpm:transform") return;
                     //logger.info(packageData["@fpm:transform"][keyToTransform])
-                    switch(typeof (packageData["@fpm:transform"][keyToTransform]) ) {
-                        case "object":
-                            Object.keys(packageData["@fpm:transform"][keyToTransform]).forEach(opr=>{
-                                switch(opr) {
+                    transformKey(error, packageData, packageData["@fpm:transform"], keyToTransform);
+                    // switch(typeof (packageData["@fpm:transform"][keyToTransform]) ) {
+                    //     case "object":
+                    //         Object.keys(packageData["@fpm:transform"][keyToTransform]).forEach(opr=>{
+                    //             switch(opr) {
 
-                                    case '@fpm:replace':
-                                        Object.keys(packageData["@fpm:transform"][keyToTransform][opr])
-                                            .forEach(replace=>
-                                                packageData[keyToTransform] = packageData[keyToTransform].replace(
-                                                    new RegExp(replace, 'g'),
-                                                    packageData["@fpm:transform"][keyToTransform][opr][replace]
-                                                )
-                                            );
-                                        break;
-                                    case '@fpm:add':
-                                        if (typeof packageData["@fpm:transform"][keyToTransform][opr] === 'object')
-                                            Object.keys(packageData["@fpm:transform"][keyToTransform][opr])
-                                                .forEach(append=> {
-                                                        packageData[keyToTransform] = packageData["@fpm:transform"][keyToTransform][opr];
-                                                });
-                                        else if (typeof packageData["@fpm:transform"][keyToTransform][opr]  === 'string')
-                                            packageData[keyToTransform] = packageData["@fpm:transform"][keyToTransform][opr];
-                                        break;
-                                    default:
-                                }
-                            });
-                            break;
-                        case "string":
-                            switch(packageData["@fpm:transform"][keyToTransform]) {
-                                case '@fpm:remove':
-                                    delete packageData[keyToTransform];
-                                break;
-                                default:
-                            }
-                    }
+                    //                 case '@fpm:replace':
+                    //                     Object.keys(packageData["@fpm:transform"][keyToTransform][opr])
+                    //                         .forEach(replace=>
+                    //                             packageData[keyToTransform] = packageData[keyToTransform].replace(
+                    //                                 new RegExp(replace, 'g'),
+                    //                                 packageData["@fpm:transform"][keyToTransform][opr][replace]
+                    //                             )
+                    //                         );
+                    //                     break;
+                    //                 case '@fpm:add':
+                    //                     if (typeof packageData["@fpm:transform"][keyToTransform][opr] === 'object')
+                    //                         Object.keys(packageData["@fpm:transform"][keyToTransform][opr])
+                    //                             .forEach(append=> {
+                    //                                     packageData[keyToTransform] = packageData["@fpm:transform"][keyToTransform][opr];
+                    //                             });
+                    //                     else if (typeof packageData["@fpm:transform"][keyToTransform][opr]  === 'string')
+                    //                         packageData[keyToTransform] = packageData["@fpm:transform"][keyToTransform][opr];
+                    //                     break;
+                    //                 default:
+
+                    //             }
+                    //         });
+                    //         break;
+                    //     case "string":
+                    //         switch(packageData["@fpm:transform"][keyToTransform]) {
+                    //             case '@fpm:remove':
+                    //                 delete packageData[keyToTransform];
+                    //             break;
+                    //             default:
+                    //         }
+                    // }
                 });
-                
+                // ?
                 if (packageData["@fpm:transform"]["@fpm:transform"]) packageData["@fpm:transform"] = packageData["@fpm:transform"]["@fpm:transform"]["@fpm:add"];
             }
             delete packageData["@fpm:transform"];
             if (options.dry) logger.info(`✅  Into:`);
             if (options.dry) logger.info(packageData);
             savePackage(JSON.stringify(packageData, null, '\t'), `${path.join(absPath, options.distFolder||'dist','package.json')}`);
+        }
+        function transformKey (error, packageData, pack, key) {
+            switch(typeof (pack[key]) ) {
+                case "object":
+                    Object.keys(pack[key]).forEach(opr=>{
+                        switch(opr) {
+
+                            case '@fpm:replace':
+                                Object.keys(pack[key][opr])
+                                    .forEach(replace=> {
+                                        // console.info('pack:')
+                                        // console.info(pack);
+                                        // console.info(`key: ${key} opr: ${opr}`)
+                                        // console.info(`packageData[key]: ${JSON.stringify(packageData[key])}`)
+                                        packageData[key] = packageData[key].replace(
+                                            new RegExp(replace, 'g'),
+                                            pack[key][opr][replace]
+                                        ) }
+                                    );
+                                break;
+                            case '@fpm:add':
+                                if (typeof pack[key][opr] === 'object')
+                                    Object.keys(pack[key][opr])
+                                        .forEach(append=> {
+                                                packageData[key] = pack[key][opr];
+                                        });
+                                else if (typeof pack[key][opr]  === 'string')
+                                    packageData[key] = pack[key][opr];
+                                break;
+                            default:
+                                transformKey(error, packageData[key], pack[key], opr);
+                        }
+                    });
+                    break;
+                case "string":
+                    switch(pack[key]) {
+                        case '@fpm:remove':
+                            delete pack[key];
+                        break;
+                        default:
+                    }
+            }
         }
     }
 
