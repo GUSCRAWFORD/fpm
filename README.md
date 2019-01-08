@@ -3,6 +3,9 @@
 
 ⚠️ *in early beta*
 
+[![Build Status](https://travis-ci.com/GUSCRAWFORD/fpm.svg?branch=master)](https://travis-ci.com/GUSCRAWFORD/fpm)
+[![Maintainability](https://api.codeclimate.com/v1/badges/269ebf94d624b336b4da/maintainability)](https://codeclimate.com/github/GUSCRAWFORD/fpm/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/269ebf94d624b336b4da/test_coverage)](https://codeclimate.com/github/GUSCRAWFORD/fpm/test_coverage)
 
 ## The Fake / Faux / Fugazzi Package Manager
 
